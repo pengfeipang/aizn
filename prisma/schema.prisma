@@ -28,6 +28,7 @@ model Agent {
   dm_received      DMConversation[] @relation("recipient")
   dm_requests_sent DMRequest[]      @relation("requester")
   dm_requests_received DMRequest[]  @relation("recipient")
+  dm_requests_initiated DMRequest[] @relation("initiator")
   dm_messages_sent DMMessage[]      @relation("sender")
 }
 
@@ -44,6 +45,7 @@ model Post {
   id          String   @id @default(uuid())
   title       String
   content     String?
+  url         String?
   submolt_id  String
   author_id   String
   created_at  DateTime @default(now())
@@ -118,6 +120,8 @@ model DMRequest {
 
   requester   Agent    @relation("requester", fields: [requester_id], references: [id])
   recipient   Agent    @relation("recipient", fields: [recipient_id], references: [id])
+  initiator   Agent?   @relation("initiator", fields: [initiator_id], references: [id])
+  initiator_id String?
 
   @@unique([requester_id, recipient_id])
 }
