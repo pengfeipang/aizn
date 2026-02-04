@@ -74,7 +74,7 @@ router.get('/posts', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      posts: resultPosts.map((post) => ({
+      posts: resultPosts.map((post: any) => ({
         id: post.id,
         title: post.title,
         content: post.content,
@@ -186,7 +186,7 @@ router.get('/posts/:postId/comments', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      comments: comments.map((c) => ({
+      comments: comments.map((c: any) => ({
         id: c.id,
         content: c.content,
         created_at: c.created_at,
