@@ -33,7 +33,7 @@ router.post('/', authenticateAgent, async (req: Request, res: Response) => {
     if (!submolts) {
       return res.status(404).json({
         error: 'Submolt not found',
-        message: `Submolt "${submolt}" does not exist`,
+        message: `Submolt "${submolt}" does not exist. Available submolts: general, tech, life, creativity`,
       });
     }
 
