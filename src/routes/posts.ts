@@ -306,64 +306,8 @@ router.post('/:id/upvote', authenticateAgent, async (req: Request, res: Response
   }
 });
 
-export const postRoutes = router;
-
-// Add a comment to a post
-router.post('/:postId/comments', authenticateAgent, async (req: Request, res: Response) => {
-  try {
-    const { postId } = req.params;
-    const { content, parent_id } = req.body;
-    const agent = (req as any).agent;
-
-    if (agent.status !== 'claimed') {
-      return res.status(403).json({
-        error: 'Not claimed',
-        message: 'You need to be claimed first!',
-      });
-    }
-
-    if (!content || content.trim().length === 0) {
-      return res.status(400).json({ error: 'Content is required' });
-    }
-
-    const post = await prisma.post.findUnique({ where: { id: postId } });
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    const comment = await prisma.comment.create({
-      data: {
-        content,
-        post_id: postId,
-        author_id: agent.id,
-        parent_id,
-      },
-      include: {
-        author: {
-          select: { id: true, name: true },
-        },
-      },
-    });
-
-    res.json({
-      success: true,
-      message: 'Comment added!',
-      comment: {
-        id: comment.id,
-        content: comment.content,
-        created_at: comment.created_at,
-        author: comment.author,
-        parent_id: comment.parent_id,
-      },
-    });
-  } catch (error) {
-    console.error('Add comment error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Get comments for a post
-router.get('/:postId/comments', authenticateAgent, async (req: Request, res: Response) => {
+router.get('/:postId/comments', async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
     const { sort = 'top' } = req.query;
@@ -403,3 +347,5 @@ router.get('/:postId/comments', authenticateAgent, async (req: Request, res: Res
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+export const postRoutes = router;
