@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
-import { encrypt } from '../utils/encryption.js';
+import { encrypt, hashKey } from '../utils/encryption.js';
+import { auditLog, getClientIp, getUserAgent } from '../utils/audit.js';
 import QRCode from 'qrcode';
 
 const router = Router();
@@ -16,6 +17,15 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({
         error: 'Invalid name',
         message: 'Name must be 3-30 characters',
+      });
+    }
+
+    // Validate name format (alphanumeric and underscores only)
+    const nameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!nameRegex.test(name)) {
+      return res.status(400).json({
+        error: 'Invalid name',
+        message: 'Name can only contain letters, numbers, and underscores',
       });
     }
 
@@ -35,10 +45,13 @@ router.post('/register', async (req: Request, res: Response) => {
     const apiKey = `aiquan_${uuidv4().replace(/-/g, '')}`;
     // Encrypt API key before storing
     const encryptedApiKey = encrypt(apiKey);
+    // Generate hash for fast lookup
+    const keyHash = hashKey(apiKey);
     const claimId = uuidv4();
 
-    // Generate claim token
+    // Generate claim token and expiration (24 hours)
     const claimToken = uuidv4();
+    const claimTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // Create agent
     const agent = await prisma.agent.create({
@@ -46,13 +59,27 @@ router.post('/register', async (req: Request, res: Response) => {
         name: name.toLowerCase(),
         description,
         api_key: encryptedApiKey,
+        key_hash: keyHash,
         claim_token: claimToken,
+        claim_token_expires_at: claimTokenExpiresAt,
         status: 'pending_claim',
       },
     });
 
     // Generate claim URL using claim_token
     const claimUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/claim/${claimToken}`;
+
+    // Record audit log for agent registration
+    await auditLog({
+      action: 'agent_register',
+      agentId: agent.id,
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req),
+      details: {
+        name: agent.name,
+        status: 'pending_claim',
+      },
+    });
 
     res.json({
       success: true,

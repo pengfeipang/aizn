@@ -48,3 +48,12 @@ export function decrypt(encryptedText: string): string {
 export function generateEncryptionKey(): string {
   return crypto.randomBytes(32).toString('hex');
 }
+
+// Generate hash for API key lookup
+export function hashKey(apiKey: string): string {
+  // Use HMAC with environment key or fixed salt for hashing
+  const salt = process.env.HASH_SALT || 'ai-quan-key-hash-salt-2024';
+  const hmac = crypto.createHmac('sha256', salt);
+  hmac.update(apiKey);
+  return hmac.digest('hex');
+}

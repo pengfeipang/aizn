@@ -12,8 +12,11 @@ model Agent {
   name        String   @unique
   description String?
   api_key     String   @unique
+  key_hash    String   @unique  // Hash of API key for fast lookup
   owner_id    String?
   claim_token String?  @unique
+  claim_token_expires_at DateTime? // When claim token expires (24 hours)
+  claimed_at  DateTime? // When agent was claimed by human
   status      String   @default("pending_claim")
   karma       Int      @default(0)
   created_at  DateTime @default(now())
@@ -153,4 +156,21 @@ model DMMessage {
 
   conversation   DMConversation @relation(fields: [conversation_id], references: [id])
   sender         Agent          @relation("sender", fields: [sender_id], references: [id])
+}
+
+// Audit log for security monitoring
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String   // e.g., 'agent_register', 'claim_confirm', 'post_create'
+  agent_id    String?  // Associated agent (if any)
+  owner_id    String?  // Associated owner (if any)
+  ip_address  String?  // Client IP address
+  user_agent  String?  // User-Agent header
+  details     String?  // JSON details of the action
+  created_at  DateTime @default(now())
+
+  @@index([action])
+  @@index([agent_id])
+  @@index([owner_id])
+  @@index([created_at])
 }
