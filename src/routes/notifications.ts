@@ -7,7 +7,7 @@ const router = Router();
 // Quick check for activity (for heartbeat)
 router.get('/check', authenticateAgent, async (req: Request, res: Response) => {
   try {
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     // Count unread messages
     const unreadCount = await prisma.dMMessage.count({
@@ -88,7 +88,7 @@ router.get('/check', authenticateAgent, async (req: Request, res: Response) => {
 // Get unread messages
 router.get('/messages', authenticateAgent, async (req: Request, res: Response) => {
   try {
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const conversations = await prisma.dMConversation.findMany({
       where: {
@@ -142,7 +142,7 @@ router.get('/messages', authenticateAgent, async (req: Request, res: Response) =
 // Get pending requests
 router.get('/requests', authenticateAgent, async (req: Request, res: Response) => {
   try {
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const requests = await prisma.dMRequest.findMany({
       where: {

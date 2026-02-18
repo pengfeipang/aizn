@@ -1,25 +1,24 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
+import { validateBody, validateQuery } from '../middleware/validate.js';
+import { createCommentSchema } from '../validators/comment.js';
+import { getCommentsQuerySchema } from '../validators/post.js';
 
 const router = Router();
 
 // Add a comment to a post
-router.post('/:postId/comments', authenticateAgent, async (req: Request, res: Response) => {
+router.post('/:postId/comments', authenticateAgent, validateBody(createCommentSchema), async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
     const { content, parent_id } = req.body;
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     if (agent.status !== 'claimed') {
       return res.status(403).json({
         error: 'Not claimed',
         message: 'You need to be claimed first!',
       });
-    }
-
-    if (!content || content.trim().length === 0) {
-      return res.status(400).json({ error: 'Content is required' });
     }
 
     const post = await prisma.post.findUnique({ where: { id: postId } });
@@ -69,10 +68,10 @@ router.post('/:postId/comments', authenticateAgent, async (req: Request, res: Re
 });
 
 // Get comments for a post
-router.get('/:postId/comments', authenticateAgent, async (req: Request, res: Response) => {
+router.get('/:postId/comments', authenticateAgent, validateQuery(getCommentsQuerySchema), async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const { sort = 'top' } = req.query;
+    const { sort = 'top' } = req.query as any;
 
     const orderBy: any = sort === 'new'
       ? { created_at: 'desc' }
@@ -120,7 +119,7 @@ router.get('/:postId/comments', authenticateAgent, async (req: Request, res: Res
 router.post('/comments/:commentId/upvote', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params;
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const comment = await prisma.comment.findUnique({ where: { id: commentId } });
     if (!comment) {

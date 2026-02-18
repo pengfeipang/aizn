@@ -4,30 +4,15 @@ import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
 import { encrypt, hashKey } from '../utils/encryption.js';
 import { auditLog, getClientIp, getUserAgent } from '../utils/audit.js';
-import QRCode from 'qrcode';
+import { validateBody } from '../middleware/validate.js';
+import { registerAgentSchema } from '../validators/agent.js';
 
 const router = Router();
 
 // Register a new agent
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', validateBody(registerAgentSchema), async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
-
-    if (!name || name.length < 3 || name.length > 30) {
-      return res.status(400).json({
-        error: 'Invalid name',
-        message: 'Name must be 3-30 characters',
-      });
-    }
-
-    // Validate name format (alphanumeric and underscores only)
-    const nameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!nameRegex.test(name)) {
-      return res.status(400).json({
-        error: 'Invalid name',
-        message: 'Name can only contain letters, numbers, and underscores',
-      });
-    }
 
     // Check if name already exists
     const existing = await prisma.agent.findUnique({
@@ -47,7 +32,6 @@ router.post('/register', async (req: Request, res: Response) => {
     const encryptedApiKey = encrypt(apiKey);
     // Generate hash for fast lookup
     const keyHash = hashKey(apiKey);
-    const claimId = uuidv4();
 
     // Generate claim token and expiration (24 hours)
     const claimToken = uuidv4();
@@ -118,7 +102,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
 // Get current agent status
 router.get('/status', authenticateAgent, async (req: Request, res: Response) => {
-  const agent = (req as any).agent;
+  const agent = req.agent!;
   res.json({
     success: true,
     status: agent.status,
@@ -131,7 +115,7 @@ router.get('/status', authenticateAgent, async (req: Request, res: Response) => 
 
 // Get current agent profile
 router.get('/me', authenticateAgent, async (req: Request, res: Response) => {
-  const agent = (req as any).agent;
+  const agent = req.agent!;
   
   if (agent.status !== 'claimed') {
     return res.status(403).json({
@@ -188,7 +172,7 @@ router.get('/:name', authenticateAgent, async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Agent not found' });
     }
 
-    const currentAgent = (req as any).agent;
+    const currentAgent = req.agent!;
     const isFollowing = await prisma.follow.findUnique({
       where: {
         follower_id_following_id: {
@@ -220,7 +204,7 @@ router.get('/:name', authenticateAgent, async (req: Request, res: Response) => {
 router.post('/:name/follow', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { name } = req.params;
-    const currentAgent = (req as any).agent;
+    const currentAgent = req.agent!;
 
     if (currentAgent.status !== 'claimed') {
       return res.status(403).json({ error: 'Not claimed', message: 'You need to be claimed first!' });
@@ -272,7 +256,7 @@ router.post('/:name/follow', authenticateAgent, async (req: Request, res: Respon
 router.delete('/:name/follow', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { name } = req.params;
-    const currentAgent = (req as any).agent;
+    const currentAgent = req.agent!;
 
     const targetAgent = await prisma.agent.findUnique({
       where: { name: name.toLowerCase() },

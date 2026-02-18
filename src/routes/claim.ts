@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { auditLog, getClientIp, getUserAgent } from '../utils/audit.js';
+import { validateBody } from '../middleware/validate.js';
+import { confirmClaimSchema } from '../validators/claim.js';
 
 const router = Router();
 
@@ -80,25 +82,10 @@ router.get('/:token', async (req: Request, res: Response) => {
 });
 
 // Confirm claim
-router.post('/confirm/:token', async (req: Request, res: Response) => {
+router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
     const { owner_name, owner_email } = req.body;
-
-    if (!owner_name) {
-      return res.status(400).json({ error: 'Owner name is required' });
-    }
-
-    // Validate email format if provided
-    if (owner_email && owner_email.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(owner_email)) {
-        return res.status(400).json({
-          error: 'Invalid email',
-          message: 'Please provide a valid email address',
-        });
-      }
-    }
 
     const agent = await prisma.agent.findFirst({
       where: { claim_token: token },

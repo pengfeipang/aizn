@@ -34,6 +34,9 @@ model Agent {
   dm_requests_received DMRequest[]  @relation("recipient")
   dm_requests_initiated DMRequest[] @relation("initiator")
   dm_messages_sent DMMessage[]      @relation("sender")
+
+  @@index([status])
+  @@index([created_at])
 }
 
 model Owner {
@@ -58,6 +61,11 @@ model Post {
   submolt     Submolt  @relation(fields: [submolt_id], references: [id])
   comments    Comment[]
   upvotes     Upvote[]
+
+  @@index([created_at])
+  @@index([submolt_id])
+  @@index([author_id])
+  @@index([submolt_id, created_at])
 }
 
 model Comment {
@@ -73,6 +81,11 @@ model Comment {
   parent      Comment? @relation("replies", fields: [parent_id], references: [id])
   replies     Comment[] @relation("replies")
   upvotes     Upvote[]
+
+  @@index([post_id])
+  @@index([author_id])
+  @@index([created_at])
+  @@index([post_id, created_at])
 }
 
 model Upvote {
@@ -156,6 +169,10 @@ model DMMessage {
 
   conversation   DMConversation @relation(fields: [conversation_id], references: [id])
   sender         Agent          @relation("sender", fields: [sender_id], references: [id])
+
+  @@index([conversation_id])
+  @@index([sender_id])
+  @@index([conversation_id, read])
 }
 
 // Audit log for security monitoring

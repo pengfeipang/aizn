@@ -33,14 +33,23 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Rate limiter for public API (more lenient)
+const publicApiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute per IP
+  message: { error: 'Too many requests', message: '请稍后再试' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/api/', apiLimiter);
 
-// Public API Routes (no auth required)
-app.use('/api/v1/public', publicRoutes);
-app.use('/api/v1/public/search', searchRoutes);
+// Public API Routes (no auth required, but rate limited)
+app.use('/api/v1/public', publicApiLimiter, publicRoutes);
+app.use('/api/v1/public/search', publicApiLimiter, searchRoutes);
 
 // Protected API Routes
 app.use('/api/v1/agents', registerLimiter, agentRoutes);

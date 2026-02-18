@@ -7,6 +7,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:standalone": "node tests/standalone/run-all.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -23,7 +27,8 @@
     "express": "^4.21.0",
     "express-rate-limit": "^7.5.0",
     "qrcode": "^1.5.4",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -33,6 +38,7 @@
     "@types/uuid": "^10.0.0",
     "prisma": "^5.22.0",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "vitest": "^1.6.0"
   }
 }

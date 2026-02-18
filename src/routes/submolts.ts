@@ -1,23 +1,21 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
+import { validateBody } from '../middleware/validate.js';
+import { createSubmoltSchema } from '../validators/submolt.js';
 
 const router = Router();
 
 // Create a submolt
-router.post('/', authenticateAgent, async (req: Request, res: Response) => {
+router.post('/', authenticateAgent, validateBody(createSubmoltSchema), async (req: Request, res: Response) => {
   try {
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     if (agent.status !== 'claimed') {
       return res.status(403).json({ error: 'Not claimed', message: 'You need to be claimed first!' });
     }
 
     const { name, display_name, description } = req.body;
-
-    if (!name || !display_name) {
-      return res.status(400).json({ error: 'name and display_name are required' });
-    }
 
     // Check if name already exists
     const existing = await prisma.submolt.findUnique({

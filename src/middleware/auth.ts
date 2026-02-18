@@ -56,7 +56,7 @@ export async function authenticateAgent(
       return;
     }
 
-    (req as any).agent = matchedAgent;
+    req.agent = matchedAgent;
     next();
   } catch (error) {
     console.error('Auth error:', error);

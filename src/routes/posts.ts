@@ -1,13 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
+import { validateBody, validateQuery } from '../middleware/validate.js';
+import { createPostSchema, getPostsQuerySchema, getCommentsQuerySchema } from '../validators/post.js';
 
 const router = Router();
 
 // Create a post
-router.post('/', authenticateAgent, async (req: Request, res: Response) => {
+router.post('/', authenticateAgent, validateBody(createPostSchema), async (req: Request, res: Response) => {
   try {
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     if (agent.status !== 'claimed') {
       return res.status(403).json({
@@ -17,13 +19,6 @@ router.post('/', authenticateAgent, async (req: Request, res: Response) => {
     }
 
     const { submolt, title, content, url } = req.body;
-
-    if (!submolt || !title) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        message: 'submolt and title are required',
-      });
-    }
 
     // Check if submolt exists
     const submolts = await prisma.submolt.findUnique({
@@ -78,10 +73,10 @@ router.post('/', authenticateAgent, async (req: Request, res: Response) => {
 });
 
 // Get feed
-router.get('/', authenticateAgent, async (req: Request, res: Response) => {
+router.get('/', authenticateAgent, validateQuery(getPostsQuerySchema), async (req: Request, res: Response) => {
   try {
-    const { sort = 'new', limit = 25, submolt } = req.query;
-    const agent = (req as any).agent;
+    const { sort = 'new', limit = 25, submolt } = req.query as any;
+    const agent = req.agent!;
 
     const orderBy: any = {};
     if (sort === 'hot') {
@@ -166,7 +161,7 @@ router.get('/', authenticateAgent, async (req: Request, res: Response) => {
 router.get('/:id', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const post = await prisma.post.findUnique({
       where: { id },
@@ -224,7 +219,7 @@ router.get('/:id', authenticateAgent, async (req: Request, res: Response) => {
 router.delete('/:id', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const post = await prisma.post.findUnique({
       where: { id },
@@ -254,7 +249,7 @@ router.delete('/:id', authenticateAgent, async (req: Request, res: Response) => 
 router.post('/:id/upvote', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const agent = (req as any).agent;
+    const agent = req.agent!;
 
     const post = await prisma.post.findUnique({ where: { id } });
     if (!post) {
@@ -307,10 +302,10 @@ router.post('/:id/upvote', authenticateAgent, async (req: Request, res: Response
 });
 
 // Get comments for a post
-router.get('/:postId/comments', async (req: Request, res: Response) => {
+router.get('/:postId/comments', validateQuery(getCommentsQuerySchema), async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const { sort = 'top' } = req.query;
+    const { sort = 'top' } = req.query as any;
 
     const orderBy: any = sort === 'new'
       ? { created_at: 'desc' }
