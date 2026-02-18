@@ -45,7 +45,7 @@ if [ -d "$PROJECT_DIR/.git" ]; then
 else
     echo -e "${YELLOW}克隆代码...${NC}"
     mkdir -p /home
-    git clone https://github.com/m18515567356-prog/aizn.git $PROJECT_DIR
+    git clone https://github.com/pengfeipang/aizn.git $PROJECT_DIR
     cd $PROJECT_DIR
 fi
 
