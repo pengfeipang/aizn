@@ -61,9 +61,9 @@ npx prisma generate
 if [ ! -f "$PROJECT_DIR/.env" ]; then
     echo -e "${YELLOW}创建 .env 文件...${NC}"
     cat > $PROJECT_DIR/.env << EOF
-DATABASE_URL="postgresql://aiuser:你的密码@localhost:5432/aiquan"
-ENCRYPTION_KEY="$(openssl rand -hex 32)"
-BASE_URL="http://$(hostname -I | awk '{print $1}'):3000"
+DATABASE_URL="postgresql://aiuser:bendan321@localhost:5432/aiquan"
+ENCRYPTION_KEY="b4652e7e24cc0b3252819bc97ac3a02f1920884a89cca8c9c288a8fc93caee40"
+BASE_URL="https://everkeep.online"
 PORT=3000
 EOF
     echo -e "${RED}请编辑 .env 文件配置数据库密码！${NC}"
