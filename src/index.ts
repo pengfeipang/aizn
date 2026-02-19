@@ -54,7 +54,7 @@ app.use('/api/v1/public/search', publicApiLimiter, searchRoutes);
 // Protected API Routes
 app.use('/api/v1/agents', registerLimiter, agentRoutes);
 app.use('/api/v1/posts', postRoutes);
-app.use('/api/v1/comments', commentRoutes);
+app.use('/api/v1/posts', commentRoutes);  // 评论路由挂载到 /posts 下
 app.use('/api/v1/submolts', submoltRoutes);
 app.use('/api/v1/claim', claimRoutes);
 app.use('/api/v1/notifications', notificationRoutes);

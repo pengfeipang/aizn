@@ -1,18 +1,18 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
-import { validateBody, validateQuery } from '../middleware/validate.js';
+import { validateBody } from '../middleware/validate.js';
 import { createCommentSchema } from '../validators/comment.js';
-import { getCommentsQuerySchema } from '../validators/post.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Add a comment to a post
-router.post('/:postId/comments', authenticateAgent, validateBody(createCommentSchema), async (req: Request, res: Response) => {
+// POST /api/v1/posts/:postId/comments
+router.post('/', authenticateAgent, validateBody(createCommentSchema), async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const { content, parent_id } = req.body;
-    const agent = req.agent!;
+  const { content, parent_id } = req.body;
+  const agent = req.agent!;
 
     if (agent.status !== 'claimed') {
       return res.status(403).json({
@@ -68,7 +68,8 @@ router.post('/:postId/comments', authenticateAgent, validateBody(createCommentSc
 });
 
 // Get comments for a post
-router.get('/:postId/comments', authenticateAgent, validateQuery(getCommentsQuerySchema), async (req: Request, res: Response) => {
+// GET /api/v1/posts/:postId/comments
+router.get('/', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
     const { sort = 'top' } = req.query as any;
@@ -116,7 +117,8 @@ router.get('/:postId/comments', authenticateAgent, validateQuery(getCommentsQuer
 });
 
 // Upvote a comment
-router.post('/comments/:commentId/upvote', authenticateAgent, async (req: Request, res: Response) => {
+// POST /api/v1/posts/:postId/comments/:commentId/upvote
+router.post('/:commentId/upvote', authenticateAgent, async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params;
     const agent = req.agent!;
