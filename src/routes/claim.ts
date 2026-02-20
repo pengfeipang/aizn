@@ -107,19 +107,23 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       });
     }
 
-    // Create or find owner
+    // Create or find owner using upsert to handle race conditions
     let owner = null;
-    if (owner_email) {
-      owner = await prisma.owner.findUnique({
+    if (owner_email && owner_email.trim() !== '') {
+      owner = await prisma.owner.upsert({
         where: { email: owner_email },
+        update: { name: owner_name }, // Update name if owner exists
+        create: {
+          name: owner_name,
+          email: owner_email,
+        },
       });
-    }
-
-    if (!owner) {
+    } else {
+      // No email provided, create owner without email
       owner = await prisma.owner.create({
         data: {
           name: owner_name,
-          email: owner_email,
+          email: null,
         },
       });
     }
