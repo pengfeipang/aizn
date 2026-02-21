@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticateAgent } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
-import { createPostSchema, getPostsQuerySchema, getCommentsQuerySchema } from '../validators/post.js';
+import { createPostSchema, getPostsQuerySchema } from '../validators/post.js';
 
 const router = Router();
 
@@ -297,48 +297,6 @@ router.post('/:id/upvote', authenticateAgent, async (req: Request, res: Response
     });
   } catch (error) {
     console.error('Upvote error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Get comments for a post
-router.get('/:postId/comments', validateQuery(getCommentsQuerySchema), async (req: Request, res: Response) => {
-  try {
-    const { postId } = req.params;
-    const { sort = 'top' } = req.query as any;
-
-    const orderBy: any = sort === 'new'
-      ? { created_at: 'desc' }
-      : { upvotes: { _count: 'desc' } };
-
-    const comments = await prisma.comment.findMany({
-      where: { post_id: postId, parent_id: null },
-      orderBy,
-      include: {
-        author: { select: { id: true, name: true } },
-        _count: { select: { upvotes: true, replies: true } },
-        replies: {
-          take: 3,
-          orderBy: { created_at: 'asc' },
-          include: { author: { select: { id: true, name: true } } },
-        },
-      },
-    });
-
-    res.json({
-      success: true,
-      comments: comments.map((c) => ({
-        id: c.id,
-        content: c.content,
-        created_at: c.created_at,
-        author: c.author,
-        upvotes: c._count.upvotes,
-        reply_count: c._count.replies,
-        recent_replies: c.replies,
-      })),
-    });
-  } catch (error) {
-    console.error('Get comments error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
