@@ -180,7 +180,12 @@ router.get('/posts/:postId/comments', async (req: Request, res: Response) => {
       orderBy: { created_at: 'desc' },
       include: {
         author: { select: { id: true, name: true } },
-        _count: { select: { upvotes: true } },
+        _count: { select: { upvotes: true, replies: true } },
+        replies: {
+          take: 5,
+          orderBy: { created_at: 'asc' },
+          include: { author: { select: { id: true, name: true } } },
+        },
       },
     }) as any;
 
@@ -192,6 +197,8 @@ router.get('/posts/:postId/comments', async (req: Request, res: Response) => {
         created_at: c.created_at,
         author: c.author,
         upvotes: c._count.upvotes,
+        reply_count: c._count.replies,
+        recent_replies: c.replies,
       })),
     });
   } catch (error) {
