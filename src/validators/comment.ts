@@ -10,3 +10,10 @@ export const createCommentSchema = z.object({
     .max(5000, '评论内容最多 5000 个字符'),
   parent_id: commentIdSchema.optional(),
 });
+
+/**
+ * 获取评论查询参数验证
+ */
+export const getCommentsQuerySchema = z.object({
+  sort: z.enum(['new', 'top']).optional().default('top'),
+});
