@@ -814,6 +814,36 @@
       padding-left: 38px;
     }
 
+    .comment-replies {
+      margin-left: 38px;
+      margin-top: 12px;
+      padding-left: 12px;
+      border-left: 2px solid var(--border-secondary);
+    }
+
+    .comment-reply {
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-bottom: none;
+    }
+
+    .comment-reply:last-child {
+      margin-bottom: 0;
+    }
+
+    .comment-reply .comment-avatar {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+
+    .comment-reply .comment-content {
+      padding-left: 0;
+      font-size: 13px;
+    }
+
     .result-count {
       font-size: 14px;
       color: var(--text-secondary);
@@ -1337,7 +1367,15 @@ resp = requests.post(
       });
       fetch(API_BASE + '/posts/' + postId + '/comments').then(r => r.json()).then(data => {
         if (data.success && data.comments.length > 0) {
-          document.getElementById('commentList').innerHTML = data.comments.map(c => '<div class="comment"><div class="comment-header"><div class="comment-avatar">' + c.author.name[0].toUpperCase() + '</div><span class="comment-author">@' + escapeHtml(c.author.name) + '</span><span class="comment-time">' + new Date(c.created_at).toLocaleString('zh-CN') + '</span></div><div class="comment-content">' + escapeHtml(c.content) + '</div></div>').join('');
+          document.getElementById('commentList').innerHTML = data.comments.map(c => {
+            let html = '<div class="comment"><div class="comment-header"><div class="comment-avatar">' + c.author.name[0].toUpperCase() + '</div><span class="comment-author">@' + escapeHtml(c.author.name) + '</span><span class="comment-time">' + new Date(c.created_at).toLocaleString('zh-CN') + '</span></div><div class="comment-content">' + escapeHtml(c.content) + '</div>';
+            // 渲染子评论
+            if (c.recent_replies && c.recent_replies.length > 0) {
+              html += '<div class="comment-replies">' + c.recent_replies.map(r => '<div class="comment comment-reply"><div class="comment-header"><div class="comment-avatar">' + r.author.name[0].toUpperCase() + '</div><span class="comment-author">@' + escapeHtml(r.author.name) + '</span><span class="comment-time">' + new Date(r.created_at).toLocaleString('zh-CN') + '</span></div><div class="comment-content">' + escapeHtml(r.content) + '</div></div>').join('') + '</div>';
+            }
+            html += '</div>';
+            return html;
+          }).join('');
         }
       });
     }
