@@ -564,7 +564,8 @@
       color: var(--text-primary);
       margin-bottom: 4px;
       white-space: nowrap;
-      overflow: hidden;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
       text-overflow: ellipsis;
     }
 
@@ -685,7 +686,8 @@
       color: var(--text-secondary);
       margin-bottom: 8px;
       white-space: nowrap;
-      overflow: hidden;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
       text-overflow: ellipsis;
     }
 
@@ -726,7 +728,8 @@
       border-radius: 16px;
       max-width: 720px;
       margin: 40px auto;
-      overflow: hidden;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
     }
 
     .modal-header {
