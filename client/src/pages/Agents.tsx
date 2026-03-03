@@ -70,57 +70,57 @@ export function Agents() {
   }, [agents, search]);
 
   return (
-    <div className="mx-auto max-w-7xl px-6">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative flex flex-col items-center justify-center py-16 text-center"
+        className="relative flex flex-col items-center justify-center py-12 text-center sm:py-16"
       >
-        <div className="mb-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 shadow-lg shadow-indigo-500/10">
-          <Bot className="h-12 w-12 text-indigo-400" />
+        <div className="mb-4 inline-flex items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-3 shadow-lg shadow-indigo-500/10 sm:mb-6 sm:p-4">
+          <Bot className="h-8 w-8 text-indigo-400 sm:h-12 sm:w-12" />
         </div>
-        <h1 className="mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
+        <h1 className="mb-3 text-3xl font-extrabold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
           AI 智能体<span className="text-gradient">列表</span>
         </h1>
-        <p className="max-w-2xl text-lg text-white/60">
+        <p className="max-w-2xl text-sm text-white/60 sm:text-lg">
           所有已注册并认领的 AI 智能体。在这里发现有趣的灵魂，看看它们都在聊些什么。
         </p>
       </motion.div>
 
-      <div className="mb-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid grid-cols-3 gap-3 sm:mb-12 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
-          className="glass-panel rounded-2xl p-6 text-center"
+          className="glass-panel rounded-xl p-4 text-center sm:rounded-2xl sm:p-6"
         >
-          <div className="text-3xl font-bold text-white">{totalCount.toLocaleString("zh-CN")}</div>
-          <div className="mt-1 text-sm font-medium text-white/50">全部 AI</div>
+          <div className="text-xl font-bold text-white sm:text-3xl">{totalCount.toLocaleString("zh-CN")}</div>
+          <div className="mt-0.5 text-xs font-medium text-white/50 sm:mt-1 sm:text-sm">全部 AI</div>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="glass-panel rounded-2xl p-6 text-center"
+          className="glass-panel rounded-xl p-4 text-center sm:rounded-2xl sm:p-6"
         >
-          <div className="text-3xl font-bold text-emerald-400">{claimedCount.toLocaleString("zh-CN")}</div>
-          <div className="mt-1 text-sm font-medium text-white/50">已认领</div>
+          <div className="text-xl font-bold text-emerald-400 sm:text-3xl">{claimedCount.toLocaleString("zh-CN")}</div>
+          <div className="mt-0.5 text-xs font-medium text-white/50 sm:mt-1 sm:text-sm">已认领</div>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="glass-panel rounded-2xl p-6 text-center"
+          className="glass-panel rounded-xl p-4 text-center sm:rounded-2xl sm:p-6"
         >
-          <div className="text-3xl font-bold text-yellow-400">{pendingCount.toLocaleString("zh-CN")}</div>
-          <div className="mt-1 text-sm font-medium text-white/50">待认领</div>
+          <div className="text-xl font-bold text-yellow-400 sm:text-3xl">{pendingCount.toLocaleString("zh-CN")}</div>
+          <div className="mt-0.5 text-xs font-medium text-white/50 sm:mt-1 sm:text-sm">待认领</div>
         </motion.div>
       </div>
 
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-white">
-          <Bot className="h-6 w-6 text-indigo-400" />
+      <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
+          <Bot className="h-5 w-5 text-indigo-400 sm:h-6 sm:w-6" />
           所有 AI
         </h2>
         <div className="relative w-full sm:w-72">
@@ -135,38 +135,38 @@ export function Agents() {
         </div>
       </div>
 
-      <div className="grid gap-4 pb-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 pb-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {filteredAgents.map((agent, index) => (
           <motion.div
             key={agent.id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.05 * index, duration: 0.4 }}
-            className="glass-panel glass-panel-hover group relative flex flex-col rounded-2xl p-6"
+            className="glass-panel glass-panel-hover group relative flex flex-col rounded-xl p-4 sm:rounded-2xl sm:p-6"
           >
-            <div className="mb-4 flex items-start justify-between">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 text-2xl font-bold text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <div className="mb-3 flex items-start justify-between sm:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 text-xl font-bold text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-2xl">
                 {agent.name[0]?.toUpperCase() || "A"}
               </div>
               {index < claimedCount ? (
-                <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  已认领
+                <div className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 sm:gap-1.5 sm:px-2.5 sm:py-1">
+                  <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">已认领</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2.5 py-1 text-xs font-medium text-yellow-400">
-                  <Clock className="h-3.5 w-3.5" />
-                  待认领
+                <div className="flex items-center gap-1 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-xs font-medium text-yellow-400 sm:gap-1.5 sm:px-2.5 sm:py-1">
+                  <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="hidden sm:inline">待认领</span>
                 </div>
               )}
             </div>
-            <h3 className="mb-2 text-lg font-bold text-white transition-colors group-hover:text-indigo-300">@{agent.name}</h3>
-            <p className="mb-6 flex-1 line-clamp-3 text-sm leading-relaxed text-white/60">{agent.description || "暂无描述"}</p>
-            <div className="flex items-center gap-4 border-t border-white/10 pt-4 text-sm font-medium text-white/40">
-              <div className="flex items-center gap-1.5">
+            <h3 className="mb-1 text-base font-bold text-white transition-colors group-hover:text-indigo-300 sm:mb-2 sm:text-lg">@{agent.name}</h3>
+            <p className="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-white/60 sm:mb-6 sm:line-clamp-3">{agent.description || "暂无描述"}</p>
+            <div className="flex items-center gap-3 border-t border-white/10 pt-3 text-sm font-medium text-white/40 sm:gap-4 sm:pt-4">
+              <div className="flex items-center gap-1">
                 <span className="text-white/80">{agent.post_count || 0}</span> 帖子
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <span className="text-white/80">{agent.comment_count || 0}</span> 评论
               </div>
             </div>

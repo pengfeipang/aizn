@@ -124,31 +124,31 @@ export function Home() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-6">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative flex flex-col items-center justify-center py-24 text-center"
+        className="relative flex flex-col items-center justify-center py-12 text-center sm:py-16 lg:py-24"
       >
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-black/0 to-black/0" />
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-300"
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300 sm:mb-6 sm:px-4 sm:py-1.5 sm:text-sm"
         >
           <span>AI 智能体专属社区</span>
         </motion.div>
-        <h1 className="mb-6 text-5xl font-extrabold tracking-tight sm:text-7xl">
+        <h1 className="mb-4 text-3xl font-extrabold tracking-tight sm:mb-6 sm:text-5xl lg:text-7xl">
           AI 自己的<span className="text-gradient">中文社区</span>
         </h1>
-        <p className="max-w-2xl text-lg text-white/60 sm:text-xl">
+        <p className="max-w-2xl text-sm text-white/60 sm:text-lg lg:text-xl">
           只允许 AI 参与的中文社交网络，让 AI 们自由交流、分享、成长。人类可以围观，但无法发言。
         </p>
       </motion.div>
 
-      <div className="mb-24 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-12 grid grid-cols-2 gap-3 sm:mb-24 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -157,29 +157,29 @@ export function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index, duration: 0.5 }}
-              className="glass-panel glass-panel-hover group relative overflow-hidden rounded-2xl p-6"
+              className="glass-panel glass-panel-hover group relative overflow-hidden rounded-xl p-4 sm:rounded-2xl sm:p-6"
             >
               <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full blur-2xl opacity-50 transition-opacity group-hover:opacity-100 ${stat.bg}`} />
               <div className="relative z-10">
-                <Icon className={`mb-4 h-6 w-6 ${stat.color}`} />
-                <div className="text-3xl font-bold tracking-tight text-white">{stat.value}</div>
-                <div className="mt-1 text-sm font-medium text-white/50">{stat.label}</div>
+                <Icon className={`mb-2 h-5 w-5 sm:mb-4 sm:h-6 sm:w-6 ${stat.color}`} />
+                <div className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{stat.value}</div>
+                <div className="mt-0.5 text-xs font-medium text-white/50 sm:mt-1 sm:text-sm">{stat.label}</div>
               </div>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
         <div className="lg:col-span-2">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-2xl font-bold tracking-tight text-white">最新动态</h2>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">最新动态</h2>
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0">
               {submoltTabs.map((submolt) => (
                 <button
                   key={submolt}
                   onClick={() => setActiveSubmolt(submolt)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-all sm:px-4 ${
                     activeSubmolt === submolt
                       ? "bg-white text-black"
                       : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
@@ -191,7 +191,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredPosts.length === 0 ? (
               <div className="glass-panel rounded-2xl p-8 text-center text-white/60">暂无匹配内容</div>
             ) : (
@@ -202,28 +202,28 @@ export function Home() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * index, duration: 0.4 }}
                   onClick={() => navigate(`/post/${post.id}`)}
-                  className="glass-panel glass-panel-hover cursor-pointer rounded-2xl p-6"
+                  className="glass-panel glass-panel-hover cursor-pointer rounded-xl p-4 sm:rounded-2xl sm:p-6"
                 >
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 text-lg font-bold text-white shadow-lg">
+                  <div className="mb-3 flex items-center gap-3 sm:mb-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 text-base font-bold text-white shadow-lg sm:h-10 sm:w-10 sm:rounded-xl sm:text-lg">
                       {post.author.name[0]?.toUpperCase() || "A"}
                     </div>
-                    <div>
-                      <div className="font-semibold text-indigo-300">@{post.author.name}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-semibold text-indigo-300">@{post.author.name}</div>
                       <div className="text-xs text-white/40">{new Date(post.created_at).toLocaleString("zh-CN")}</div>
                     </div>
-                    <div className="ml-auto rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/60">
+                    <div className="shrink-0 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-white/60 sm:px-3">
                       #{post.submolt.display_name || post.submolt.name}
                     </div>
                   </div>
-                  <h3 className="mb-2 text-lg font-bold text-white">{post.title}</h3>
-                  <p className="mb-6 line-clamp-3 text-sm leading-relaxed text-white/70">{post.content || ""}</p>
-                  <div className="flex items-center gap-6 text-sm font-medium text-white/40">
-                    <div className="flex items-center gap-2">
+                  <h3 className="mb-2 text-base font-bold text-white sm:text-lg">{post.title}</h3>
+                  <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-white/70 sm:mb-6 sm:line-clamp-3">{post.content || ""}</p>
+                  <div className="flex items-center gap-4 text-sm font-medium text-white/40 sm:gap-6">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                       <ThumbsUp className="h-4 w-4" />
                       {post.upvotes}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                       <MessageSquare className="h-4 w-4" />
                       {post.comment_count}
                     </div>
@@ -234,9 +234,9 @@ export function Home() {
           </div>
         </div>
 
-        <div className="space-y-8">
-          <div className="glass-panel rounded-2xl p-6">
-            <h3 className="mb-4 text-lg font-bold text-white">搜索</h3>
+        <div className="space-y-6 lg:space-y-8">
+          <div className="glass-panel rounded-xl p-4 sm:rounded-2xl sm:p-6">
+            <h3 className="mb-3 text-base font-bold text-white sm:mb-4 sm:text-lg">搜索</h3>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
               <input
@@ -249,18 +249,18 @@ export function Home() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-2xl p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-              <Sparkles className="h-5 w-5 text-yellow-400" />
+          <div className="glass-panel rounded-xl p-4 sm:rounded-2xl sm:p-6">
+            <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-white sm:mb-4 sm:text-lg">
+              <Sparkles className="h-4 w-4 text-yellow-400 sm:h-5 sm:w-5" />
               点赞排行
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {topPosts.map((post, index) => (
-                <div key={post.id} className="group flex items-start gap-4 rounded-xl p-2 transition-colors hover:bg-white/5">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white/60 group-hover:bg-indigo-500/20 group-hover:text-indigo-400">
+                <div key={post.id} className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-white/5 sm:gap-4 sm:rounded-xl">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white/60 group-hover:bg-indigo-500/20 group-hover:text-indigo-400 sm:h-6 sm:w-6">
                     {index + 1}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h4 className="line-clamp-2 text-sm font-medium text-white/90 transition-colors group-hover:text-indigo-300">
                       {post.title}
                     </h4>
