@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # AI圈 - 服务器安装脚本
-# 适用于 Ubuntu 22.04 / Debian 12
+# 适用于 Ubuntu/Debian (apt) 和 CentOS/RHEL/Alibaba Cloud Linux (dnf/yum)
 
 set -e
 
@@ -20,24 +20,55 @@ info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
+# 检测包管理器
+detect_package_manager() {
+  if command -v apt &> /dev/null; then
+    PKG_MANAGER="apt"
+    PKG_INSTALL="apt install -y"
+    PKG_UPDATE="apt update && apt upgrade -y"
+  elif command -v dnf &> /dev/null; then
+    PKG_MANAGER="dnf"
+    PKG_INSTALL="dnf install -y"
+    PKG_UPDATE="dnf upgrade -y"
+  elif command -v yum &> /dev/null; then
+    PKG_MANAGER="yum"
+    PKG_INSTALL="yum install -y"
+    PKG_UPDATE="yum update -y"
+  else
+    error "不支持的系统，找不到 apt/dnf/yum"
+  fi
+  info "检测到包管理器: $PKG_MANAGER"
+}
+
+detect_package_manager
+
 # 检查是否为 root 用户
 if [ "$EUID" -ne 0 ]; then
-  warn "建议使用 sudo 运行此脚本"
+  error "请使用 root 用户或 sudo 运行此脚本"
 fi
+
+# 获取脚本所在目录（保存原始目录）
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+info "项目目录: $SCRIPT_DIR"
 
 # ==========================================
 # 1. 系统更新
 # ==========================================
 info "更新系统包..."
-apt update && apt upgrade -y
+$PKG_UPDATE || warn "系统更新部分失败，继续..."
 
 # ==========================================
 # 2. 安装 Node.js
 # ==========================================
 info "安装 Node.js 20.x..."
 if ! command -v node &> /dev/null; then
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-  apt install -y nodejs
+  if [ "$PKG_MANAGER" = "apt" ]; then
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt install -y nodejs
+  else
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+    $PKG_INSTALL nodejs
+  fi
 fi
 node --version
 npm --version
@@ -47,9 +78,13 @@ npm --version
 # ==========================================
 info "安装 PostgreSQL..."
 if ! command -v psql &> /dev/null; then
-  apt install -y postgresql postgresql-contrib
+  if [ "$PKG_MANAGER" = "apt" ]; then
+    apt install -y postgresql postgresql-contrib
+  else
+    $PKG_INSTALL postgresql-server postgresql-contrib
+    postgresql-setup --initdb || warn "PostgreSQL 可能已初始化"
+  fi
 
-  # 启动并启用 PostgreSQL
   systemctl start postgresql
   systemctl enable postgresql
 fi
@@ -59,12 +94,24 @@ fi
 # ==========================================
 info "配置 PostgreSQL 数据库..."
 
-# 设置数据库密码 (可以从环境变量或参数获取)
 DB_PASSWORD="${DB_PASSWORD:-aiquan123}"
+
+# RHEL/CentOS 需要先配置认证方式
+if [ "$PKG_MANAGER" != "apt" ]; then
+  PG_HBA="/var/lib/pgsql/data/pg_hba.conf"
+  if [ -f "$PG_HBA" ]; then
+    info "配置 PostgreSQL 认证方式..."
+    cp "$PG_HBA" "${PG_HBA}.bak" 2>/dev/null || true
+    sed -i 's/local\s*all\s*all\s*peer/local all all trust/' "$PG_HBA"
+    sed -i 's/local\s*all\s*all\s*ident/local all all trust/' "$PG_HBA"
+    sed -i 's/host\s*all\s*all\s*127.0.0.1\/32\s*ident/host all all 127.0.0.1\/32 trust/' "$PG_HBA"
+    sed -i 's/host\s*all\s*all\s*::1\/128\s*ident/host all all ::1\/128 trust/' "$PG_HBA"
+    systemctl restart postgresql
+  fi
+fi
 
 # 创建数据库和用户
 sudo -u postgres psql <<EOF
--- 如果用户不存在则创建
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'aiquan') THEN
@@ -73,21 +120,17 @@ BEGIN
 END
 \$\$;
 
--- 创建数据库
 SELECT 'CREATE DATABASE aiquan OWNER aiquan'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aiquan')\gexec
 
--- 授权
 GRANT ALL PRIVILEGES ON DATABASE aiquan TO aiquan;
 EOF
 
 info "PostgreSQL 配置完成"
-info "数据库: aiquan"
-info "用户: aiquan"
-info "密码: ${DB_PASSWORD}"
+info "数据库: aiquan | 用户: aiquan | 密码: ${DB_PASSWORD}"
 
 # ==========================================
-# 5. 安装 PM2 (进程管理)
+# 5. 安装 PM2
 # ==========================================
 info "安装 PM2..."
 npm install -g pm2
@@ -96,11 +139,9 @@ npm install -g pm2
 # 6. 安装项目依赖
 # ==========================================
 info "安装项目依赖..."
-
-# 获取脚本所在目录
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
-
+chown -R root:root "$SCRIPT_DIR" 2>/dev/null || true
+chmod -R 755 "$SCRIPT_DIR" 2>/dev/null || true
 npm install
 
 # ==========================================
@@ -109,16 +150,11 @@ npm install
 if [ ! -f .env ]; then
   info "创建 .env 文件..."
   cp .env.example .env
-
-  # 更新 DATABASE_URL
   sed -i "s|DATABASE_URL=.*|DATABASE_URL=\"postgresql://aiquan:${DB_PASSWORD}@localhost:5432/aiquan?schema=public\"|" .env
-
-  # 生成安全密钥
   ENCRYPTION_KEY=$(openssl rand -hex 32)
   HASH_SALT=$(openssl rand -hex 16)
   sed -i "s|ENCRYPTION_KEY=.*|ENCRYPTION_KEY=${ENCRYPTION_KEY}|" .env
   sed -i "s|HASH_SALT=.*|HASH_SALT=${HASH_SALT}|" .env
-
   info "安全密钥已自动生成"
 fi
 
@@ -128,28 +164,18 @@ fi
 info "初始化 Prisma 和数据库..."
 npx prisma generate
 npx prisma migrate deploy
-npx prisma db seed
+npx prisma db seed || warn "种子数据可能已存在"
 
 # ==========================================
-# 9. 构建前端 (React)
+# 9. 构建项目
 # ==========================================
-info "构建前端 (React)..."
-cd client
-npm install
-npm run build
-cd ..
-
-# ==========================================
-# 10. 构建后端
-# ==========================================
-info "构建后端..."
+info "构建项目..."
 npm run build
 
 # ==========================================
-# 11. 配置 PM2
+# 10. 配置 PM2
 # ==========================================
 info "配置 PM2..."
-
 cat > ecosystem.config.js <<EOF
 module.exports = {
   apps: [{
@@ -168,27 +194,38 @@ module.exports = {
   }]
 }
 EOF
-
-# 创建日志目录
 mkdir -p logs
+chmod 755 logs
 
 # ==========================================
-# 12. 启动服务
+# 11. 启动服务
 # ==========================================
 info "启动服务..."
 pm2 start ecosystem.config.js
 pm2 save
 
 # ==========================================
-# 13. 配置 Nginx (可选)
+# 12. 配置 Nginx (可选)
 # ==========================================
 if command -v nginx &> /dev/null; then
   info "检测到 Nginx，配置反向代理..."
 
-  cat > /etc/nginx/sites-available/aiquan <<'EOF'
+  if [ "$PKG_MANAGER" = "apt" ]; then
+    NGINX_CONF_DIR="/etc/nginx/sites-available"
+    NGINX_ENABLED_DIR="/etc/nginx/sites-enabled"
+  else
+    NGINX_CONF_DIR="/etc/nginx/conf.d"
+    NGINX_ENABLED_DIR="/etc/nginx/conf.d"
+  fi
+
+  # 确保目录存在
+  mkdir -p "$NGINX_CONF_DIR" 2>/dev/null || true
+
+  if [ -d "$NGINX_CONF_DIR" ]; then
+    cat > "$NGINX_CONF_DIR/aiquan.conf" <<'NGINX_EOF'
 server {
     listen 80;
-    server_name _;  # 替换为你的域名
+    server_name _;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -202,12 +239,22 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 }
-EOF
+NGINX_EOF
 
-  ln -sf /etc/nginx/sites-available/aiquan /etc/nginx/sites-enabled/
-  nginx -t && systemctl reload nginx
+    if [ "$PKG_MANAGER" = "apt" ] && [ -d "$NGINX_ENABLED_DIR" ]; then
+      ln -sf "$NGINX_CONF_DIR/aiquan.conf" "$NGINX_ENABLED_DIR/"
+    fi
 
-  info "Nginx 配置完成"
+    if nginx -t 2>/dev/null; then
+      systemctl reload nginx && info "Nginx 配置完成"
+    else
+      warn "Nginx 配置测试失败，请手动检查"
+    fi
+  else
+    warn "无法创建 Nginx 配置目录，跳过"
+  fi
+else
+  info "未检测到 Nginx，跳过反向代理配置"
 fi
 
 # ==========================================
@@ -217,6 +264,9 @@ echo ""
 echo -e "${GREEN}=========================================="
 echo "   安装完成!"
 echo "==========================================${NC}"
+echo ""
+echo "系统信息:"
+echo "  包管理器: $PKG_MANAGER"
 echo ""
 echo "服务状态:"
 pm2 status
