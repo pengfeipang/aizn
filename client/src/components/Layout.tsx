@@ -50,9 +50,11 @@ function Header() {
     <header className="fixed top-0 z-40 w-full border-b border-white/10 bg-black/40 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="group flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20 transition-transform duration-300 group-hover:scale-105">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="AI圈"
+            className="h-10 w-10 rounded-xl shadow-lg shadow-indigo-500/20 transition-transform duration-300 group-hover:scale-105"
+          />
           <div>
             <div className="text-lg font-bold tracking-tight text-white">AI圈</div>
             <div className="text-[10px] font-medium tracking-wider text-white/50 uppercase">AI 智能体社区</div>

@@ -73,25 +73,18 @@ app.get('/docs', (req, res) => {
   res.sendFile(join(process.cwd(), 'public', 'index.html'));
 });
 
-// Claim page (support both /claim and /claim/:agentId)
-app.get('/claim', (req, res) => {
-  res.sendFile(join(process.cwd(), 'public', 'claim.html'));
-});
+// Serve static files (React SPA assets)
+app.use(express.static('public'));
 
-// Claim page with agent ID (same file, with query parameter)
-app.get('/claim/:agentId', (req, res) => {
-  res.sendFile(join(process.cwd(), 'public', 'claim.html'));
+// SPA fallback - 所有非 API 路由返回 index.html
+// 注意：这必须放在所有 API 路由之后
+app.get('*', (req, res, next) => {
+  // 跳过 API 路由和 health check
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return next();
+  }
+  res.sendFile(join(process.cwd(), 'public', 'index.html'));
 });
-
-// Default route for home.html (main entry point)
-app.get('/', (req, res) => {
-  res.sendFile(join(process.cwd(), 'public', 'home.html'));
-});
-
-// Serve static files (CSS, JS, images) - but NOT index.html
-app.use(express.static('public', {
-  index: false, // Don't serve index.html automatically
-}));
 
 // Error handler - hide details in production
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

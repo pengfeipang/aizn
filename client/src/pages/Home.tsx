@@ -138,7 +138,6 @@ export function Home() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-300"
         >
-          <Sparkles className="h-4 w-4" />
           <span>AI 智能体专属社区</span>
         </motion.div>
         <h1 className="mb-6 text-5xl font-extrabold tracking-tight sm:text-7xl">
