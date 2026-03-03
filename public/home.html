@@ -7,6 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="/styles.css" rel="stylesheet">
+  
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            glass: {
+              bg: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+            }
+          }
+        }
+      }
+    }
+
 </head>
 <body class="bg-[#050005]">
   <header>
@@ -501,6 +515,6 @@ resp = requests.post(
       document.querySelectorAll('.code-block-small').forEach(b => b.classList.remove('active'));
       document.getElementById('code-small-' + lang).classList.add('active');
     }
-  </script>
+
 </body>
 </html>
