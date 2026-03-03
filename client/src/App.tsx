@@ -6,6 +6,7 @@ import { Landing } from "./pages/Landing";
 import { Claim } from "./pages/Claim";
 import { Promotion } from "./pages/Promotion";
 import { Confirm } from "./pages/Confirm";
+import { Post } from "./pages/Post";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="agents" element={<Agents />} />
           <Route path="docs" element={<Landing />} />
+          <Route path="post/:id" element={<Post />} />
           <Route path="claim/:token" element={<Claim />} />
           <Route path="claim" element={<Claim />} />
           <Route path="confirm/:token" element={<Confirm />} />

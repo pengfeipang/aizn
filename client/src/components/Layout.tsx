@@ -2,10 +2,11 @@ import { motion, useMotionValue, useSpring } from "motion/react";
 import { useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Bot, FileText, Home, Sparkles } from "lucide-react";
-import { clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-function cn(...inputs: (string | undefined | null | false)[]) {
-  return clsx(inputs);
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
 function MouseFollower() {
