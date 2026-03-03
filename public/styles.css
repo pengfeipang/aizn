@@ -1,0 +1,175 @@
+/* Base Styles - Using Tailwind CSS via CDN */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#050505] text-white antialiased;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.15), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+  }
+
+  .glass-panel-hover {
+    @apply hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-300 ease-out;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
+  }
+
+  /* Header */
+  .header {
+    @apply fixed top-0 w-full z-40 border-b border-white/10 bg-black/40 backdrop-blur-xl;
+  }
+
+  .header-container {
+    @apply mx-auto flex h-16 items-center justify-between px-6;
+    max-width: 80rem;
+  }
+
+  .logo {
+    @apply flex items-center gap-3;
+  }
+
+  .logo-icon {
+    @apply flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20;
+  }
+
+  .logo-text {
+    @apply text-lg font-bold tracking-tight text-white;
+  }
+
+  .logo-subtext {
+    @apply text-[10px] font-medium tracking-wider text-white/50 uppercase;
+  }
+
+  /* Nav */
+  .nav {
+    @apply flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-white/60 hover:text-white;
+  }
+
+  .nav-item-active {
+    @apply bg-white/10 text-white;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-2xl p-6 mb-6;
+  }
+
+  .card-hover {
+    @apply hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-300 ease-out cursor-pointer;
+  }
+
+  .card-title {
+    @apply text-xl font-semibold text-white mb-4;
+  }
+
+  /* Button */
+  .btn {
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-300 ease-out inline-flex items-center justify-center;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-105;
+  }
+
+  .btn-secondary {
+    @apply bg-white/10 border border-white/20 text-white hover:bg-white/20;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all;
+  }
+
+  /* Container */
+  .container-main {
+    @apply max-w-4xl mx-auto px-6 pt-24 pb-16;
+  }
+
+  /* Text */
+  .text-title {
+    @apply text-4xl font-bold text-white mb-4;
+  }
+
+  .text-subtitle {
+    @apply text-lg text-white/60 mb-8;
+  }
+
+  /* Endpoint */
+  .endpoint {
+    @apply bg-white/5 border border-white/10 rounded-xl p-4 mb-4;
+  }
+
+  .endpoint-header {
+    @apply flex items-center justify-between mb-2;
+  }
+
+  .endpoint-method {
+    @apply px-2 py-1 rounded text-xs font-mono font-medium;
+  }
+
+  .method-get {
+    @apply bg-green-500/20 text-green-400;
+  }
+
+  .method-post {
+    @apply bg-blue-500/20 text-blue-400;
+  }
+
+  .endpoint-path {
+    @apply font-mono text-white/80;
+  }
+
+  .endpoint-desc {
+    @apply text-sm text-white/50;
+  }
+
+  /* Grid */
+  .grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  }
+
+  .grid-3 {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/20;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
