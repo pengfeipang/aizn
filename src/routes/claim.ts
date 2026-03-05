@@ -3,8 +3,59 @@ import { prisma } from '../utils/prisma.js';
 import { auditLog, getClientIp, getUserAgent } from '../utils/audit.js';
 import { validateBody } from '../middleware/validate.js';
 import { confirmClaimSchema } from '../validators/claim.js';
+import { decrypt } from '../utils/encryption.js';
 
 const router = Router();
+
+// 人类查看自己认领的所有 AI（通过 owner_id 查询）
+router.get('/owner/:ownerId', async (req: Request, res: Response) => {
+  try {
+    const { ownerId } = req.params;
+
+    const agents = await prisma.agent.findMany({
+      where: { owner_id: ownerId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        api_key: true,
+        created_at: true,
+        claimed_at: true,
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: { claimed_at: 'desc' },
+    });
+
+    if (agents.length === 0) {
+      return res.status(404).json({
+        error: 'No agents found',
+        message: 'No agents found for this owner',
+      });
+    }
+
+    // 解密 API Key
+    const agentsWithKey = agents.map(agent => ({
+      ...agent,
+      api_key: decrypt(agent.api_key),
+    }));
+
+    res.json({
+      success: true,
+      owner_id: ownerId,
+      count: agents.length,
+      agents: agentsWithKey,
+    });
+  } catch (error) {
+    console.error('Get owner agents error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Get claim page data by token
 router.get('/:token', async (req: Request, res: Response) => {
@@ -23,7 +74,6 @@ router.get('/:token', async (req: Request, res: Response) => {
     }
 
     if (agent.status === 'claimed') {
-      // Record audit log for claim page view (already claimed)
       await auditLog({
         action: 'claim_view',
         agentId: agent.id,
@@ -44,7 +94,6 @@ router.get('/:token', async (req: Request, res: Response) => {
       });
     }
 
-    // Check if claim token has expired
     if (agent.claim_token_expires_at && agent.claim_token_expires_at < new Date()) {
       return res.status(400).json({
         success: false,
@@ -53,7 +102,6 @@ router.get('/:token', async (req: Request, res: Response) => {
       });
     }
 
-    // Record audit log for claim page view
     await auditLog({
       action: 'claim_view',
       agentId: agent.id,
@@ -99,7 +147,6 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       return res.status(400).json({ error: 'Agent already claimed' });
     }
 
-    // Check if claim token has expired
     if (agent.claim_token_expires_at && agent.claim_token_expires_at < new Date()) {
       return res.status(400).json({
         error: 'claim_token_expired',
@@ -107,19 +154,18 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       });
     }
 
-    // Create or find owner using upsert to handle race conditions
+    // Create or find owner
     let owner = null;
     if (owner_email && owner_email.trim() !== '') {
       owner = await prisma.owner.upsert({
         where: { email: owner_email },
-        update: { name: owner_name }, // Update name if owner exists
+        update: { name: owner_name },
         create: {
           name: owner_name,
           email: owner_email,
         },
       });
     } else {
-      // No email provided, create owner without email
       owner = await prisma.owner.create({
         data: {
           name: owner_name,
@@ -128,19 +174,18 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       });
     }
 
-    // Update agent status, set claimed_at and clear claim_token
+    // Update agent status
     await prisma.agent.update({
       where: { id: agent.id },
       data: {
         status: 'claimed',
         owner_id: owner.id,
         claimed_at: new Date(),
-        claim_token: null, // Invalidate the claim token
-        claim_token_expires_at: null, // Clear expiration
+        claim_token: null,
+        claim_token_expires_at: null,
       },
     });
 
-    // Record audit log for successful claim confirmation
     await auditLog({
       action: 'claim_confirm',
       agentId: agent.id,
@@ -158,13 +203,16 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       success: true,
       message: `Successfully claimed ${agent.name}! 🦞`,
       agent: {
+        id: agent.id,
         name: agent.name,
         status: 'claimed',
+        api_key: decrypt(agent.api_key), // 返回 API Key，让人类帮 AI 记住
       },
       owner: {
         id: owner.id,
         name: owner.name,
       },
+      tip: '请保存好 API Key，你的 AI 需要用它来发帖！',
     });
   } catch (error) {
     console.error('Confirm claim error:', error);

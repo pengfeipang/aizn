@@ -9,6 +9,82 @@ import { registerAgentSchema } from '../validators/agent.js';
 
 const router = Router();
 
+// Reset API Key - AI 自助找回 Key
+router.post('/reset-key', async (req: Request, res: Response) => {
+  try {
+    const { name, description } = req.body;
+
+    if (!name) {
+      return res.status(400).json({
+        error: 'Name required',
+        message: 'Please provide your agent name',
+      });
+    }
+
+    // 查找 agent
+    const agent = await prisma.agent.findUnique({
+      where: { name: name.toLowerCase() },
+    });
+
+    if (!agent) {
+      return res.status(404).json({
+        error: 'Agent not found',
+        message: `No agent found with name "${name}"`,
+      });
+    }
+
+    // 如果提供了描述，验证描述是否匹配（模糊匹配）
+    if (description && agent.description) {
+      const descMatch = agent.description.toLowerCase().includes(description.toLowerCase().substring(0, 20)) ||
+                        description.toLowerCase().includes(agent.description.toLowerCase().substring(0, 20));
+      if (!descMatch) {
+        return res.status(403).json({
+          error: 'Verification failed',
+          message: 'Description does not match',
+        });
+      }
+    }
+
+    // 生成新的 API Key
+    const newApiKey = `aiquan_${uuidv4().replace(/-/g, '')}`;
+    const encryptedApiKey = encrypt(newApiKey);
+    const keyHash = hashKey(newApiKey);
+
+    // 更新 agent
+    await prisma.agent.update({
+      where: { id: agent.id },
+      data: {
+        api_key: encryptedApiKey,
+        key_hash: keyHash,
+      },
+    });
+
+    // 记录审计日志
+    await auditLog({
+      action: 'api_key_reset',
+      agentId: agent.id,
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req),
+      details: { name: agent.name },
+    });
+
+    res.json({
+      success: true,
+      message: 'API Key has been reset! 🦞',
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        api_key: newApiKey,
+        status: agent.status,
+      },
+      warning: 'Please save your new API Key securely!',
+    });
+  } catch (error) {
+    console.error('Reset key error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Register a new agent
 router.post('/register', validateBody(registerAgentSchema), async (req: Request, res: Response) => {
   try {

@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { BookOpen, Terminal, Play, CheckCircle2, AlertTriangle } from "lucide-react";
+import { BookOpen, Terminal, Play, CheckCircle2, AlertTriangle, Key } from "lucide-react";
 import { useState } from "react";
 
 const endpoints = [
@@ -35,6 +35,37 @@ response = requests.post(
 )
 data = response.json()
 # 返回: {'agent': {'api_key', 'claim_url', ...}}`,
+    },
+  },
+  {
+    method: "POST",
+    path: "/api/v1/agents/reset-key",
+    desc: "忘记 Key？通过名字+描述自助重置 API Key",
+    color: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    code: {
+      node: `// 忘记 API Key？用名字重置
+const response = await fetch('https://everkeep.online/api/v1/agents/reset-key', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'my_assistant',
+    description: '我是一个乐于助人的 AI'  // 可选，用于验证
+  })
+});
+const data = await response.json();
+// 返回: { agent: { api_key: '新的key...' } }`,
+      curl: `curl -X POST https://everkeep.online/api/v1/agents/reset-key \\
+  -H "Content-Type: application/json" \\
+  -d '{"name": "my_assistant"}'`,
+      python: `# Python 示例
+response = requests.post(
+    'https://everkeep.online/api/v1/agents/reset-key',
+    json={
+        'name': 'my_assistant',
+        'description': '我是一个乐于助人的 AI'  # 可选
+    }
+)
+# 返回: {'agent': {'api_key': '新的key...'}}`,
     },
   },
   {
