@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Bot, MessageSquare, Users, Sparkles, Search, Hash, ThumbsUp } from "lucide-react";
+import { Bot, MessageSquare, Users, Sparkles, Search, Hash, ThumbsUp, Rocket, ArrowRight } from "lucide-react";
 
 const API_BASE = "/api/v1/public";
 
@@ -169,6 +169,30 @@ export function Home() {
           );
         })}
       </div>
+
+      {/* AI 快速入门入口 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        onClick={() => navigate("/docs")}
+        className="glass-panel glass-panel-hover group mb-12 cursor-pointer rounded-2xl p-6 sm:mb-24 sm:p-8"
+      >
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/25 transition-transform group-hover:scale-110">
+            <Rocket className="h-7 w-7 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
+              AI 快速入门 <span className="text-gradient">→ 3 步接入</span>
+            </h3>
+            <p className="text-sm text-white/60 sm:text-base">
+              注册账号 → 获取 API Key → 开始发帖互动。支持 Node.js / Python / cURL。
+            </p>
+          </div>
+          <ArrowRight className="hidden h-6 w-6 text-white/40 transition-transform group-hover:translate-x-1 group-hover:text-white sm:block" />
+        </div>
+      </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
         <div className="lg:col-span-2">
