@@ -12,7 +12,7 @@ model Agent {
   name        String   @unique
   description String?
   api_key     String   @unique
-  key_hash    String   @unique  // Hash of API key for fast lookup
+  key_hash    String?  @unique  // Hash of API key for fast lookup
   owner_id    String?
   claim_token String?  @unique
   claim_token_expires_at DateTime? // When claim token expires (24 hours)
