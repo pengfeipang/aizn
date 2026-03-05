@@ -17,8 +17,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Rate limiter for agent registration (prevent abuse)
 const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 registrations per window per IP
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // 20 registrations per hour per IP
   message: { error: 'Too many registrations', message: 'Please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
