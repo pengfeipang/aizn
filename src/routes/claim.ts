@@ -4,8 +4,56 @@ import { auditLog, getClientIp, getUserAgent } from '../utils/audit.js';
 import { validateBody } from '../middleware/validate.js';
 import { confirmClaimSchema } from '../validators/claim.js';
 import { decrypt } from '../utils/encryption.js';
+import crypto from 'crypto';
 
 const router = Router();
+const CLAIM_SESSION_TTL_MS = 10 * 60 * 1000;
+
+type ClaimSessionPayload = {
+  agentId: string;
+  claimToken: string;
+  iat: number;
+};
+
+function getClaimSessionSecret(): string {
+  return process.env.CLAIM_SESSION_SECRET || process.env.ENCRYPTION_KEY || 'ai-quan-claim-session-dev-secret';
+}
+
+function createClaimSession(payload: ClaimSessionPayload): string {
+  const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', getClaimSessionSecret())
+    .update(payloadBase64)
+    .digest('base64url');
+  return `${payloadBase64}.${signature}`;
+}
+
+function verifyClaimSession(token: string): ClaimSessionPayload | null {
+  const [payloadBase64, signature] = token.split('.');
+  if (!payloadBase64 || !signature) {
+    return null;
+  }
+
+  const expectedSignature = crypto
+    .createHmac('sha256', getClaimSessionSecret())
+    .update(payloadBase64)
+    .digest('base64url');
+
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const signatureBuffer = Buffer.from(signature);
+  if (
+    expectedBuffer.length !== signatureBuffer.length ||
+    !crypto.timingSafeEqual(expectedBuffer, signatureBuffer)
+  ) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(Buffer.from(payloadBase64, 'base64url').toString('utf8')) as ClaimSessionPayload;
+  } catch {
+    return null;
+  }
+}
 
 // 人类查看自己认领的所有 AI（通过 owner_id 查询）
 router.get('/owner/:ownerId', async (req: Request, res: Response) => {
@@ -114,6 +162,12 @@ router.get('/:token', async (req: Request, res: Response) => {
       },
     });
 
+    const claimSession = createClaimSession({
+      agentId: agent.id,
+      claimToken: token,
+      iat: Date.now(),
+    });
+
     res.json({
       success: true,
       agent: {
@@ -122,6 +176,8 @@ router.get('/:token', async (req: Request, res: Response) => {
         status: 'pending_claim',
         expires_at: agent.claim_token_expires_at,
       },
+      claim_session: claimSession,
+      claim_session_expires_in_ms: CLAIM_SESSION_TTL_MS,
     });
   } catch (error) {
     console.error('Get claim info error:', error);
@@ -133,7 +189,7 @@ router.get('/:token', async (req: Request, res: Response) => {
 router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
-    const { owner_name, owner_email } = req.body;
+    const { owner_name, owner_email, claim_session } = req.body;
 
     const agent = await prisma.agent.findFirst({
       where: { claim_token: token },
@@ -151,6 +207,31 @@ router.post('/confirm/:token', validateBody(confirmClaimSchema), async (req: Req
       return res.status(400).json({
         error: 'claim_token_expired',
         message: 'Claim token has expired. Please register again.'
+      });
+    }
+
+    const session = verifyClaimSession(claim_session);
+    if (!session) {
+      return res.status(400).json({
+        error: 'invalid_claim_session',
+        message: 'Please open the claim link first, then confirm on that page.',
+      });
+    }
+
+    if (Date.now() - session.iat > CLAIM_SESSION_TTL_MS) {
+      return res.status(400).json({
+        error: 'claim_session_expired',
+        message: 'Claim session expired. Please refresh the claim page and try again.',
+      });
+    }
+
+    if (
+      session.agentId !== agent.id ||
+      session.claimToken !== token
+    ) {
+      return res.status(403).json({
+        error: 'claim_session_mismatch',
+        message: 'Claim session mismatch. Please refresh claim page and try again.',
       });
     }
 

@@ -10,6 +10,7 @@ export function Confirm() {
   const [agentStatus, setAgentStatus] = useState<"loading" | "pending" | "claimed">("loading");
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
+  const [claimSession, setClaimSession] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,6 +23,7 @@ export function Confirm() {
           setAgentName(data.agent.name);
           setAgentDesc(data.agent.description || "暂无介绍");
           setAgentStatus(data.agent.status === "already_claimed" ? "claimed" : "pending");
+          setClaimSession(data.claim_session || "");
         }
       } catch (err) {
         console.error(err);
@@ -35,6 +37,11 @@ export function Confirm() {
     e.preventDefault();
     setIsLoading(true);
     setMessage(null);
+    if (!claimSession) {
+      setMessage({ type: "error", text: "认领会话已失效，请刷新页面后重试" });
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await fetch(`/api/v1/claim/confirm/${token}`, {
         method: "POST",
@@ -42,6 +49,7 @@ export function Confirm() {
         body: JSON.stringify({
           owner_name: ownerName,
           owner_email: ownerEmail || undefined,
+          claim_session: claimSession,
         }),
       });
       const data = await response.json();

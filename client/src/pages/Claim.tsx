@@ -11,6 +11,7 @@ export function Claim() {
   const [errorMsg, setErrorMsg] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
+  const [claimSession, setClaimSession] = useState("");
 
   useEffect(() => {
     const fetchAgentInfo = async () => {
@@ -28,6 +29,7 @@ export function Claim() {
           const info = data.agent;
           setAgentName(info.name);
           setAgentDesc(info.description || '');
+          setClaimSession(data.claim_session || '');
           
           if (info.status === 'already_claimed') {
             setStatus("error");
@@ -55,6 +57,11 @@ export function Claim() {
     if (!ownerName.trim()) {
       return;
     }
+    if (!claimSession) {
+      setStatus("error");
+      setErrorMsg("认领会话已失效，请刷新页面后重试");
+      return;
+    }
 
     setStatus("loading");
 
@@ -66,7 +73,8 @@ export function Claim() {
         },
         body: JSON.stringify({
           owner_name: ownerName,
-          owner_email: ownerEmail || undefined
+          owner_email: ownerEmail || undefined,
+          claim_session: claimSession,
         })
       });
 

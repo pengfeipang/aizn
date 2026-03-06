@@ -5,6 +5,13 @@
 function validateConfirmClaim(data) {
   const errors = [];
 
+  // claim_session
+  if (!data.claim_session || data.claim_session.length === 0) {
+    errors.push({ field: 'claim_session', message: 'claim_session 不能为空' });
+  } else if (data.claim_session.length > 1024) {
+    errors.push({ field: 'claim_session', message: 'claim_session 格式错误' });
+  }
+
   // owner_name
   if (!data.owner_name || data.owner_name.length === 0) {
     errors.push({ field: 'owner_name', message: '拥有者名称不能为空' });
@@ -27,7 +34,7 @@ function validateConfirmClaim(data) {
 export function runClaimValidatorTests(runner) {
   runner.describe('confirmClaimSchema', () => {
     runner.it('accepts valid owner name', () => {
-      const result = validateConfirmClaim({ owner_name: 'John Doe' });
+      const result = validateConfirmClaim({ owner_name: 'John Doe', claim_session: 'session-token' });
       runner.expect(result.valid).toBe(true);
     });
 
@@ -35,12 +42,13 @@ export function runClaimValidatorTests(runner) {
       const result = validateConfirmClaim({
         owner_name: 'John Doe',
         owner_email: 'john@example.com',
+        claim_session: 'session-token',
       });
       runner.expect(result.valid).toBe(true);
     });
 
     runner.it('accepts missing email (optional)', () => {
-      const result = validateConfirmClaim({ owner_name: 'John Doe' });
+      const result = validateConfirmClaim({ owner_name: 'John Doe', claim_session: 'session-token' });
       runner.expect(result.valid).toBe(true);
     });
 
@@ -48,22 +56,28 @@ export function runClaimValidatorTests(runner) {
       const result = validateConfirmClaim({
         owner_name: 'John Doe',
         owner_email: '',
+        claim_session: 'session-token',
       });
       runner.expect(result.valid).toBe(true);
     });
 
+    runner.it('rejects missing claim_session', () => {
+      const result = validateConfirmClaim({ owner_name: 'John Doe' });
+      runner.expect(result.valid).toBe(false);
+    });
+
     runner.it('rejects missing owner name', () => {
-      const result = validateConfirmClaim({});
+      const result = validateConfirmClaim({ claim_session: 'session-token' });
       runner.expect(result.valid).toBe(false);
     });
 
     runner.it('rejects empty owner name', () => {
-      const result = validateConfirmClaim({ owner_name: '' });
+      const result = validateConfirmClaim({ owner_name: '', claim_session: 'session-token' });
       runner.expect(result.valid).toBe(false);
     });
 
     runner.it('rejects owner name longer than 100 characters', () => {
-      const result = validateConfirmClaim({ owner_name: 'a'.repeat(101) });
+      const result = validateConfirmClaim({ owner_name: 'a'.repeat(101), claim_session: 'session-token' });
       runner.expect(result.valid).toBe(false);
     });
 
@@ -71,6 +85,7 @@ export function runClaimValidatorTests(runner) {
       const result = validateConfirmClaim({
         owner_name: 'John',
         owner_email: 'invalid-email',
+        claim_session: 'session-token',
       });
       runner.expect(result.valid).toBe(false);
     });
@@ -79,6 +94,7 @@ export function runClaimValidatorTests(runner) {
       const result = validateConfirmClaim({
         owner_name: 'John',
         owner_email: 'test@',
+        claim_session: 'session-token',
       });
       runner.expect(result.valid).toBe(false);
     });

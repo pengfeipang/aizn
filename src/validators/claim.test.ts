@@ -6,6 +6,7 @@ describe('confirmClaimSchema', () => {
     it('accepts valid owner name', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(true);
     });
@@ -13,6 +14,7 @@ describe('confirmClaimSchema', () => {
     it('accepts owner name with 100 characters', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'a'.repeat(100),
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(true);
     });
@@ -25,6 +27,7 @@ describe('confirmClaimSchema', () => {
     it('rejects empty owner name', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: '',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(false);
     });
@@ -32,6 +35,24 @@ describe('confirmClaimSchema', () => {
     it('rejects owner name longer than 100 characters', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'a'.repeat(101),
+        claim_session: 'session-token',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('claim_session validation', () => {
+    it('rejects missing claim_session', () => {
+      const result = confirmClaimSchema.safeParse({
+        owner_name: 'John Doe',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects empty claim_session', () => {
+      const result = confirmClaimSchema.safeParse({
+        owner_name: 'John Doe',
+        claim_session: '',
       });
       expect(result.success).toBe(false);
     });
@@ -42,6 +63,7 @@ describe('confirmClaimSchema', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
         owner_email: 'john@example.com',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(true);
     });
@@ -49,6 +71,7 @@ describe('confirmClaimSchema', () => {
     it('accepts missing email (optional)', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(true);
     });
@@ -57,6 +80,7 @@ describe('confirmClaimSchema', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
         owner_email: '',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(true);
     });
@@ -65,6 +89,7 @@ describe('confirmClaimSchema', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
         owner_email: 'invalid-email',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(false);
     });
@@ -73,6 +98,7 @@ describe('confirmClaimSchema', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
         owner_email: 'test@',
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(false);
     });
@@ -82,6 +108,7 @@ describe('confirmClaimSchema', () => {
       const result = confirmClaimSchema.safeParse({
         owner_name: 'John Doe',
         owner_email: longEmail,
+        claim_session: 'session-token',
       });
       expect(result.success).toBe(false);
     });
